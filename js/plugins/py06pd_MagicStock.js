@@ -33,11 +33,6 @@ py06pd.MagicStock.vocabStock = "Stock";
             return false;
         }
         if (!py06pd.MagicStock.DatabaseLoaded) {
-            $dataEnemies.forEach(item => {
-                if (item) {
-                    item.levelData = py06pd.Utils.ReadJsonNote(item, 'levelData', []);
-                }
-            });
             $dataSkills.forEach(item => {
                 if (item) {
                     item.drawResist = py06pd.Utils.ReadJsonNote(item, 'drawResist', 0);
@@ -283,9 +278,8 @@ Game_Actor.prototype.magicStock = function(skillId) {
 //=============================================================================
 
 Game_Enemy.prototype.drawMagic = function() {
-    return this.enemy().levelData
-        .find(data => data.min <= this.level && data.max >= this.level)
-        .draw.map(name => $dataSkills.find(skill => skill && skill.name === name));
+    const names = this.levelData().draw ?? [];
+    return $dataSkills.filter(skill => skill && names.includes(skill.name));
 };
 
 //=============================================================================

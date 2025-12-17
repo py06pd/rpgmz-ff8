@@ -10,7 +10,10 @@ treating/testing them as discrete plugins.
 The order I have tested them in is:
 
 py06pd_Utils
+py06pd_EnemyLevels
 py06pd_MagicStock
+py06pd_EquipLearnSkill
+py06pd_BattleMechanics
 
 ## Progress
 

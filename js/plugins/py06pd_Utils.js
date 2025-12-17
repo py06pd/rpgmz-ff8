@@ -7,7 +7,7 @@
  * @plugindesc Utility methods.
  * @author Peter Dawson
  *
- * @help PDA_Utils.js
+ * @help py06pd_Utils.js
  *
  */
 
