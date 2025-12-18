@@ -82,7 +82,11 @@ py06pd.EnemyLevels = py06pd.EnemyLevels || {};
         const members = $gameParty.battleMembers();
         const avg = members.reduce((r, actor) => r + actor.level, 0) / members.length;
         this._enemies.forEach(enemy => {
-            enemy.level = Math.floor(avg * (Math.randomInt(2) === 1 ? 1.2 : 0.8));
+            if (enemy.levelData().level) {
+                enemy.level = enemy.levelData().level;
+            } else {
+                enemy.level = Math.floor(avg * (Math.randomInt(2) === 1 ? 1.2 : 0.8));
+            }
         });
     };
 

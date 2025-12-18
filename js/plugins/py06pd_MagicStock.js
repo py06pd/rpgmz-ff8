@@ -52,7 +52,7 @@ py06pd.MagicStock.vocabStock = "Stock";
     py06pd.MagicStock.Game_Action_clear = Game_Action.prototype.clear;
     Game_Action.prototype.clear = function() {
         py06pd.MagicStock.Game_Action_clear.call(this);
-        this._draw = null;
+        this._draw = false;
         this._cast = false;
     };
 
@@ -137,6 +137,19 @@ py06pd.MagicStock.vocabStock = "Stock";
         this._actorCommandWindow.setHandler("draw", this.commandDraw.bind(this));
     };
 
+    py06pd.MagicStock.Scene_Battle_onActorCancel = Scene_Battle.prototype.onActorCancel;
+    Scene_Battle.prototype.onActorCancel = function() {
+        const action = BattleManager.inputtingAction();
+        if (action && action.isCast()) {
+            this._actorWindow.hide();
+            action.setCast(0);
+            this._drawWindow.show();
+            this._drawWindow.activate();
+        } else {
+            py06pd.MagicStock.Scene_Battle_onActorCancel.call(this);
+        }
+    };
+
     py06pd.MagicStock.Scene_Battle_onEnemyOk = Scene_Battle.prototype.onEnemyOk;
     Scene_Battle.prototype.onEnemyOk = function() {
         if (
@@ -150,6 +163,19 @@ py06pd.MagicStock.vocabStock = "Stock";
             this._drawSkillWindow.select(0);
         } else {
             py06pd.MagicStock.Scene_Battle_onEnemyOk.call(this);
+        }
+    };
+
+    py06pd.MagicStock.Scene_Battle_onEnemyCancel = Scene_Battle.prototype.onEnemyCancel;
+    Scene_Battle.prototype.onEnemyCancel = function() {
+        const action = BattleManager.inputtingAction();
+        if (action && action.isCast()) {
+            this._enemyWindow.hide();
+            action.setCast(0);
+            this._drawWindow.show();
+            this._drawWindow.activate();
+        } else {
+            py06pd.MagicStock.Scene_Battle_onEnemyCancel.call(this);
         }
     };
 
@@ -224,12 +250,23 @@ py06pd.MagicStock.vocabStock = "Stock";
 // Game_Action
 //=============================================================================
 
-Game_Action.prototype.setDraw = function(skill) {
-    this._draw = skill;
+Game_Action.prototype.setDraw = function(skillId) {
+    this._item.setObject($dataSkills[skillId]);
+    this._draw = true;
 };
 
-Game_Action.prototype.setCast = function(cast) {
-    this._cast = cast;
+Game_Action.prototype.isCast = function() {
+    return this._cast;
+};
+
+Game_Action.prototype.setCast = function(skillId) {
+    if (skillId > 0) {
+        this._item.setObject($dataSkills[skillId]);
+        this._cast = true;
+    } else {
+        this._item.setObject(null);
+        this._cast = false;
+    }
 };
 
 Game_Action.prototype.executeDraw = function(target) {
@@ -238,7 +275,7 @@ Game_Action.prototype.executeDraw = function(target) {
     result.clear();
     result.used = true;
 
-    const skill = this._draw;
+    const skill = this.item();
     const drawResist = skill.drawResist;
     const amount = ((this.subject().level - target.level) / 2) + 4;
     const amount2 = Math.min(9, Math.floor((amount + this.subject().mat +
@@ -303,6 +340,7 @@ Scene_Battle.prototype.createDrawSkillWindow = function() {
 Scene_Battle.prototype.onDrawSkillOk = function() {
     this._drawSkillWindow.hide();
     this._drawSkillWindow.deactivate();
+    this._enemyWindow.hide();
     this._drawWindow.show();
     this._drawWindow.activate();
     this._drawWindow.select(0);
@@ -329,12 +367,12 @@ Scene_Battle.prototype.onDrawOk = function() {
     const action = BattleManager.inputtingAction();
     if (this._drawWindow.index() === 0) {
         action.setTarget(this._enemyWindow.enemyIndex());
-        action.setDraw(skill);
+        action.setDraw(skill.id);
         BattleManager.selectNextCommand();
         this.changeInputWindow();
     } else {
-        action.setCast(true);
-        action.setSkill(skill.id);
+        action.setCast(skill.id);
+        this._enemyWindow.hide();
         this.onSelectAction();
     }
 };
