@@ -9,6 +9,22 @@
  *
  * @help py06pd_EquipLearnSkill.js
  *
+ * Use json data for note in $dataArmors to skills to learn
+ * {
+ *   "skills": [
+ *     {
+ *       "name": "<name of skill or state, for passive skills>",
+ *       "ap": <ap required to learn skill, 0 for already learned>,
+ *       "require": "<optional, name of pre-requisite skill/state>",
+ *       "level": <optional, pre-requisite GF level>
+ *     },
+ *     ...
+ *   ]
+ * }
+ *
+ * Use json data for not in $dataEnemies to specify AP gained at end of battle
+ * {"ap":<ap gained>}
+ *
  */
 
 var py06pd = py06pd || {};
@@ -77,7 +93,9 @@ py06pd.EquipLearnSkill.vocabObtainAp = "%1 AP received!";
     py06pd.EquipLearnSkill.Game_Actor_initEquips = Game_Actor.prototype.initEquips;
     Game_Actor.prototype.initEquips = function(equips) {
         py06pd.EquipLearnSkill.Game_Actor_initEquips.call(this, equips);
+        this._gfs = [];
         this.armors().forEach(equip => {
+            this._gfs.push(equip);
             $gameParty.addGF(equip.id);
         });
     };
@@ -135,12 +153,12 @@ py06pd.EquipLearnSkill.vocabObtainAp = "%1 AP received!";
     Scene_Equip.prototype.onSlotOk = function() {
         this._slotWindow.hide();
         if (this._commandWindow.currentSymbol() === "ability") {
-            this._skillWindow.setSlotId(this._slotWindow.index() + 1);
+            this._skillWindow.setSlotId(this._slotWindow.index());
             this._skillWindow.show();
             this._skillWindow.activate();
             this._skillWindow.select(0);
         } else {
-            this._itemWindow.setSlotId(this._slotWindow.index() + 1);
+            this._itemWindow.setSlotId(1);
             this._itemWindow.show();
             this._itemWindow.activate();
             this._itemWindow.select(0);
@@ -164,12 +182,14 @@ py06pd.EquipLearnSkill.vocabObtainAp = "%1 AP received!";
         }
     };
 
-    py06pd.EquipLearnSkill.Scene_Equip_executeEquipChange = Scene_Equip.prototype.executeEquipChange;
-    Scene_Equip.prototype.executeEquipChange = function() {
-        const actor = this.actor();
-        const slotId = this._slotWindow.index() + 1;
-        const item = this._itemWindow.item();
-        actor.changeEquip(slotId, item);
+    py06pd.EquipLearnSkill.Scene_Equip_onItemOk = Scene_Equip.prototype.onItemOk;
+    Scene_Equip.prototype.onItemOk = function() {
+        SoundManager.playEquip();
+        this.executeGFChange();
+        this.hideItemWindow();
+        this._slotWindow.refresh();
+        this._itemWindow.refresh();
+        this._statusWindow.refresh();
     };
 
 //=============================================================================
@@ -221,9 +241,19 @@ BattleManager.gainAp = function() {
 // Game_Actor
 //=============================================================================
 
+py06pd.EquipLearnSkill.Game_Actor_initMembers = Game_Actor.prototype.initMembers;
+Game_Actor.prototype.initMembers = function() {
+    py06pd.EquipLearnSkill.Game_Actor_initMembers.call(this);
+    this._gfs = [];
+};
+
+Game_Actor.prototype.gfs = function() {
+    return this._gfs;
+};
+
 Game_Actor.prototype.gfSkills = function() {
     const skills = [];
-    this.armors().forEach(equip => {
+    this.gfs().forEach(equip => {
         equip.skills.forEach(s => {
             if (this.isLearnedSkill(equip.id, s.name)) {
                 skills.push(s.name);
@@ -231,6 +261,21 @@ Game_Actor.prototype.gfSkills = function() {
         });
     });
     return skills;
+};
+
+Game_Actor.prototype.setGF = function(index, item) {
+    const oldItem = index >= this._gfs.length ? null : this._gfs[index];
+    if (this.tradeItemWithParty(item, oldItem)) {
+        if (item) {
+            if (index >= this._gfs.length) {
+                this._gfs.push(item);
+            } else {
+                this._gfs[index] = item;
+            }
+        } else {
+            this._gfs.splice(index, 1);
+        }
+    }
 };
 
 //=============================================================================
@@ -349,6 +394,13 @@ Scene_Equip.prototype.onSkillOk = function() {
     this._skillWindow.activate();
 };
 
+Scene_Equip.prototype.executeGFChange = function() {
+    const actor = this.actor();
+    const slotId = this._slotWindow.index();
+    const item = this._itemWindow.item();
+    actor.setGF(slotId, item);
+};
+
 //=============================================================================
 // Window_EquipSkills
 //=============================================================================
@@ -391,20 +443,13 @@ Window_EquipSkills.prototype.setSlotId = function(slotId) {
 };
 
 Window_EquipSkills.prototype.includes = function(item) {
-    const id = this._actor.equips()[this._slotId]?.id;
+    const id = this._actor.gfs()[this._slotId]?.id;
     return $gameParty.learnedSkill(id, item.name) || $gameParty.canLearn(id, item.name);
 };
 
-Window_EquipSkills.prototype.etypeId = function() {
-    if (this._actor && this._slotId >= 0) {
-        return this._actor.equipSlots()[this._slotId];
-    } else {
-        return 0;
-    }
-};
 
 Window_EquipSkills.prototype.isEnabled = function(item) {
-    const equip = this._actor.equips()[this._slotId];
+    const equip = this._actor.gfs()[this._slotId];
     if (equip) {
         return !$gameParty.learnedSkill(equip.id, item.name);
     }
@@ -418,7 +463,7 @@ Window_EquipSkills.prototype.updateHelp = function() {
 
 Window_EquipSkills.prototype.makeItemList = function() {
     this._data = [];
-    const item = this._actor.equips()[this._slotId];
+    const item = this._actor.gfs()[this._slotId];
     if (item && item.skills) {
         this._data = item.skills.map(skill => {
             const found = $dataSkills.find(s => s && s.name === skill.name);
@@ -441,7 +486,7 @@ Window_EquipSkills.prototype.drawItemName = function(item, x, y, width) {
         const textMargin = ImageManager.iconWidth + 4;
         const itemWidth = Math.max(0, width - textMargin);
         this.resetTextColor();
-        const id = this._actor.equips()[this._slotId]?.id;
+        const id = this._actor.gfs()[this._slotId]?.id;
         if (item && $gameParty.isLearning(id, item.name)) {
             this.drawIcon(item.iconIndex, x, iconY);
         }
@@ -454,7 +499,7 @@ Window_EquipSkills.prototype.numberWidth = function() {
 };
 
 Window_EquipSkills.prototype.drawItemNumber = function(item, x, y, width) {
-    const equip = this._actor.equips()[this._slotId];
+    const equip = this._actor.gfs()[this._slotId];
     if ($gameParty.learnedSkill(equip.id, item.name)) {
         y = y + ((this.lineHeight() - ImageManager.iconHeight) / 2);
         this.drawIcon(py06pd.EquipLearnSkill.learnedIcon, x + width - ImageManager.iconWidth, y)
@@ -498,7 +543,8 @@ Window_GFSlot.prototype.setActor = function(actor) {
 };
 
 Window_GFSlot.prototype.makeItemList = function() {
-    this._data = this._actor ? this._actor.armors() : [];
+    this._data = this._actor ? [...this._actor.gfs()] : [];
+    this._data.push(null);
 };
 
 Window_GFSlot.prototype.drawItem = function(index) {
