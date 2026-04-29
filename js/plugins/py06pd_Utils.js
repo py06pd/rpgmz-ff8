@@ -19,6 +19,14 @@ py06pd.Utils.ReadJsonNote = (data, field, defaultValue) => {
         if (parsed[field]) {
             return parsed[field];
         }
+
+        if (parsed.py06pd) {
+            if (parsed.py06pd[field]) {
+                return parsed.py06pd[field];
+            }
+
+            return {};
+        }
     }
 
     return defaultValue;

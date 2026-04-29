@@ -14,8 +14,19 @@ py06pd_EnemyLevels
 py06pd_MagicStock
 py06pd_EquipLearnSkill
 py06pd_BattleMechanics
+py06pd_JunkShop
+py06pd_JunctionMagic
 
 ## Progress
+
+ * Assign GF
+ * Learn skill/statuses from GF
+ * Junk shop
+ * Enemy levels
+   * Params
+ * Assign magic to attributes
+   * Params
+   * xParams
 
 ## Todo (not comprehensive)
 
@@ -33,11 +44,16 @@ py06pd_BattleMechanics
  * Draw command
  * Draw points
  * Enemy levels
- * Learn abilities from GF
+   * Drop items
+   * Steal items
+   * Draw magic
  * Assign magic to attributes
+   * Element Atk
+   * Element Def
+   * Status Atk
+   * Status Def
  * Refine items/magic
  * Call shops from menu
- * Learn skills from gear
  * Mug command
  * Limit break
  * Support abilities

@@ -14,7 +14,6 @@
 var py06pd = py06pd || {};
 py06pd.MagicStock = py06pd.MagicStock || {};
 
-py06pd.MagicStock.equippedIcon = 160;
 py06pd.MagicStock.magicTypeId = 2;
 py06pd.MagicStock.vocabCast = "Cast";
 py06pd.MagicStock.vocabDraw = "Draw";
@@ -29,20 +28,18 @@ py06pd.MagicStock.vocabStock = "Stock";
 
     py06pd.MagicStock.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
     DataManager.isDatabaseLoaded = function() {
-        if (!py06pd.MagicStock.DataManager_isDatabaseLoaded.call(this)) {
-            return false;
-        }
-        if (!py06pd.MagicStock.DatabaseLoaded) {
+        if (py06pd.MagicStock.DataManager_isDatabaseLoaded.call(this)) {
             $dataSkills.forEach(item => {
                 if (item) {
-                    item.drawResist = py06pd.Utils.ReadJsonNote(item, 'drawResist', 0);
+                    const data = py06pd.Utils.ReadJsonNote(item, 'MagicStock', {});
+                    item.drawResist = data.drawResist ?? 0;
                 }
             });
 
-            py06pd.MagicStock.DatabaseLoaded = true;
+            return true;
         }
 
-        return true;
+        return false;
     };
 
 //=============================================================================

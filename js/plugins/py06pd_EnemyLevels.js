@@ -85,7 +85,7 @@ py06pd.EnemyLevels = py06pd.EnemyLevels || {};
             if (enemy.levelData().level) {
                 enemy.level = enemy.levelData().level;
             } else {
-                enemy.level = Math.floor(avg * (Math.randomInt(2) === 1 ? 1.2 : 0.8));
+                enemy.level = Math.max(Math.floor(avg * (Math.randomInt(2) === 1 ? 1.2 : 0.8)), 1);
             }
         });
     };

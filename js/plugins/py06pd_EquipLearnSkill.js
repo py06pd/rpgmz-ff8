@@ -9,7 +9,7 @@
  *
  * @help py06pd_EquipLearnSkill.js
  *
- * Use json data for note in $dataArmors to skills to learn
+ * Use json data for note in $dataArmors for skills to learn
  * {
  *   "skills": [
  *     {
@@ -103,8 +103,8 @@ py06pd.EquipLearnSkill.vocabObtainAp = "%1 AP received!";
     py06pd.EquipLearnSkill.Game_Actor_skills = Game_Actor.prototype.skills;
     Game_Actor.prototype.skills = function() {
         const skills = py06pd.EquipLearnSkill.Game_Actor_skills.call(this);
-        this.gfSkills().forEach(skill => {
-            const found = $dataSkills.find(s => s && s.name === skill.name);
+        this.gfSkills().forEach(skillName => {
+            const found = $dataSkills.find(s => s && s.name === skillName);
             if (found) {
                 skills.push(found);
             }
@@ -255,7 +255,7 @@ Game_Actor.prototype.gfSkills = function() {
     const skills = [];
     this.gfs().forEach(equip => {
         equip.skills.forEach(s => {
-            if (this.isLearnedSkill(equip.id, s.name)) {
+            if ($gameParty.learnedSkill(equip.id, s.name)) {
                 skills.push(s.name);
             }
         });
