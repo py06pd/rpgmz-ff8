@@ -11,7 +11,6 @@
  *
  * @help py06pd_JunctionMagic.js
  *
- *
  * Use json data for note in $dataSkills for bonus magic gives to the param it
  * is junctioned to.
  * {
@@ -36,22 +35,60 @@
  * {
  *   "junction": "<param key eg. mhp, atk>"
  * }
+ *
+ * @param equippedIcon
+ * @text Icon to display in skill list when magic is equipped to params
+ * @default 160
+ *
+ * @param vocabATK
+ * @text Abbreviation for assignment option for attack in status screen
+ * @default Str
+ *
+ * @param vocabDEF
+ * @text Abbreviation for assignment option for defence in status screen
+ * @default Vit
+ *
+ * @param vocabMAT
+ * @text Abbreviation for assignment option for magic attack in status screen
+ * @default Mag
+ *
+ * @param vocabMDF
+ * @text Abbreviation for assignment option for magic defence in status screen
+ * @default Spr
+ *
+ * @param vocabAGI
+ * @text Abbreviation for assignment option for agility in status screen
+ * @default Spd
+ *
+ * @param vocabEVA
+ * @text Abbreviation for assignment option for evasion in status screen
+ * @default Eva
+ *
+ * @param vocabHIT
+ * @text Abbreviation for assignment option for hit in status screen
+ * @default Hit
+ *
+ * @param vocabLUK
+ * @text Abbreviation for assignment option for luck in status screen
+ * @default Luck
+ *
  */
 
 var py06pd = py06pd || {};
 py06pd.JunctionMagic = py06pd.JunctionMagic || {};
-py06pd.JunctionMagic.equippedIcon = 160;
-py06pd.JunctionMagic.vocabHP = 'HP';
-py06pd.JunctionMagic.vocabATK = 'Str';
-py06pd.JunctionMagic.vocabDEF = 'Vit';
-py06pd.JunctionMagic.vocabMAT = 'Mag';
-py06pd.JunctionMagic.vocabMDF = 'Spr';
-py06pd.JunctionMagic.vocabAGI = 'Spd';
-py06pd.JunctionMagic.vocabEVA = 'Eva';
-py06pd.JunctionMagic.vocabHIT = 'Hit';
-py06pd.JunctionMagic.vocabLUK = 'Luck';
 
 (function() {
+
+    const params = PluginManager.parameters('py06pd_JunctionMagic');
+    py06pd.JunctionMagic.equippedIcon = Number(params.equippedIcon || 160);
+    py06pd.JunctionMagic.vocabATK = params.vocabATK || 'Str';
+    py06pd.JunctionMagic.vocabDEF = params.vocabDEF || 'Vit';
+    py06pd.JunctionMagic.vocabMAT = params.vocabMAT || 'Mag';
+    py06pd.JunctionMagic.vocabMDF = params.vocabMDF || 'Spr';
+    py06pd.JunctionMagic.vocabAGI = params.vocabAGI || 'Spd';
+    py06pd.JunctionMagic.vocabEVA = params.vocabEVA || 'Eva';
+    py06pd.JunctionMagic.vocabHIT = params.vocabHIT || 'Hit';
+    py06pd.JunctionMagic.vocabLUK = params.vocabLUK || 'Luck';
 
 //=============================================================================
 // BattleManager
@@ -117,24 +154,18 @@ py06pd.JunctionMagic.vocabLUK = 'Luck';
 // Window_SkillList
 //=============================================================================
 
-    py06pd.JunctionMagic.Window_SkillList_costWidth = Window_SkillList.prototype.costWidth;
-    Window_SkillList.prototype.costWidth = function() {
-        return py06pd.JunctionMagic.Window_SkillList_costWidth.call(this) +
-            8 + ImageManager.iconWidth;
-    };
-
-    py06pd.JunctionMagic.Window_SkillList_drawSkillCost = Window_SkillList.prototype.drawSkillCost;
-    Window_SkillList.prototype.drawSkillCost = function(skill, x, y, width) {
-        if (this._actor && this._stypeId === py06pd.MagicStock.magicTypeId) {
-            this.changeTextColor(ColorManager.mpCostColor());
-            const textWidth = width - 8 - ImageManager.iconWidth;
-            this.drawText(this._actor.magicStock(skill.id), x, y, textWidth, "right");
-            if (this._actor.isEquippedMagic(skill.id)) {
-                const iconY = (this.lineHeight() - ImageManager.iconHeight) / 2;
-                this.drawIcon(py06pd.JunctionMagic.equippedIcon, x + textWidth + 8, y + iconY);
-            }
-        } else {
-            py06pd.MagicStock.Window_SkillList_drawSkillCost.call(this, skill, x, y, width);
+    py06pd.JunctionMagic.Window_SkillList_drawItem = Window_SkillList.prototype.drawItem;
+    Window_SkillList.prototype.drawItem = function(index) {
+        const skill = this.itemAt(index);
+        if (skill) {
+            const costWidth = this.costWidth();
+            const iconWidth = 8 + ImageManager.iconWidth;
+            const rect = this.itemLineRect(index);
+            this.changePaintOpacity(this.isEnabled(skill));
+            this.drawItemName(skill, rect.x, rect.y, rect.width - costWidth - iconWidth);
+            this.drawSkillCost(skill, rect.x, rect.y, rect.width - iconWidth);
+            this.drawEquippedIcon(skill, rect.width + 8 - iconWidth, rect.y);
+            this.changePaintOpacity(1);
         }
     };
 
@@ -473,7 +504,7 @@ Window_JunctionMagicParams.prototype.isEnabled = function(item) {
 
 Window_JunctionMagicParams.prototype.makeItemList = function() {
     this._data = [
-        { key: 'mhp', label: py06pd.JunctionMagic.vocabHP, type: 'param', id: 0 },
+        { key: 'mhp', label: TextManager.basic(3), type: 'param', id: 0 },
         { key: 'agi', label: py06pd.JunctionMagic.vocabAGI, type: 'param', id: 6 },
         { key: 'atk', label: py06pd.JunctionMagic.vocabATK, type: 'param', id: 2 },
         { key: 'hit', label: py06pd.JunctionMagic.vocabHIT, type: 'xparam', id: 0 },
@@ -588,5 +619,16 @@ Window_JunctionMagic.prototype.updateHelp = function() {
         const actor = JsonEx.makeDeepCopy(this._actor);
         actor.equipMagic(this._paramType, this._paramId, this.item() ? this.item().id : null);
         this._paramsWindow.setTempActor(actor);
+    }
+};
+
+//=============================================================================
+// Window_SkillList
+//=============================================================================
+
+Window_SkillList.prototype.drawEquippedIcon = function(skill, x, y, width) {
+    if (this._actor.isEquippedMagic(skill.id)) {
+        const iconY = (this.lineHeight() - ImageManager.iconHeight) / 2;
+        this.drawIcon(py06pd.JunctionMagic.equippedIcon, x, y + iconY);
     }
 };
