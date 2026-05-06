@@ -8,13 +8,44 @@
  * @author Peter Dawson
  *
  * @help py06pd_BattleMechanics.js
+ *
+ * @param BattleSpeed
+ * @type number
+ * @text 1 - Fastest, 5 - Slowest
+ * @default 3
+ *
+ * @param tpbChargeRate_sparamId
+ * @text sparam id for tpd charge rate for Haste and Slow
+ * @type number
+ * @default 10
+ *
  */
 
 var py06pd = py06pd || {};
 py06pd.BattleMechanics = py06pd.BattleMechanics || {};
-py06pd.BattleMechanics.BattleSpeed = 3; // 1 - Fastest, 5 - Slowest
 
 (function() {
+
+    const params = PluginManager.parameters('py06pd_BattleMechanics');
+    py06pd.BattleMechanics.BattleSpeed = Number(params.BattleSpeed || 3);
+    py06pd.BattleMechanics.tpbChargeRate_sparamId = Number(params.tpbChargeRate_sparamId || 10);
+
+//=============================================================================
+// BattleManager
+//=============================================================================
+
+    py06pd.BattleMechanics.BattleManager_onEncounter = BattleManager.onEncounter;
+    BattleManager.onEncounter = function() {
+        py06pd.BattleMechanics.BattleManager_onEncounter.call(this);
+
+        const mod = this.encounterMod();
+        const rnd = Math.randomInt(256) + mod;
+        if (rnd < 20) {
+            this._surprise = true;
+        } else if (rnd >= 236) {
+            this._preemptive = true;
+        }
+    };
 
 //=============================================================================
 // Game_Action
@@ -71,14 +102,14 @@ py06pd.BattleMechanics.BattleSpeed = 3; // 1 - Fastest, 5 - Slowest
         }
     };
 
-    py06pd.BattleMechanics.Game_Battler_tpbBaseSpeed = Game_Battler.prototype.tpbBaseSpeed;
-    Game_Battler.prototype.tpbBaseSpeed = function() {
-        return 1;
+    py06pd.BattleMechanics.Game_Battler_tpbRelativeSpeed = Game_Battler.prototype.tpbRelativeSpeed;
+    Game_Battler.prototype.tpbRelativeSpeed = function() {
+        return this.tpbSpeed() * this.sparam(py06pd.BattleMechanics.tpbChargeRate_sparamId);
     };
 
     py06pd.BattleMechanics.Game_Battler_tpbSpeed = Game_Battler.prototype.tpbSpeed;
     Game_Battler.prototype.tpbSpeed = function() {
-        return (this.agi + 30) * this.paramRate(6) / 2;
+        return this.agi + 30;
     };
 
 //=============================================================================
@@ -107,3 +138,7 @@ py06pd.BattleMechanics.BattleSpeed = 3; // 1 - Fastest, 5 - Slowest
     };
 
 })();
+
+BattleManager.encounterMod = function() {
+    return 0;
+};

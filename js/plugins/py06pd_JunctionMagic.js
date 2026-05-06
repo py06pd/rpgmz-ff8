@@ -7,9 +7,7 @@
  * @plugindesc Junction magic to params.
  * @author Peter Dawson
  *
- * Requires py06pd_MagicStock plugin
- *
- * @help py06pd_JunctionMagic.js
+ * @help Requires py06pd_MagicStock plugin
  *
  * Use json data for note in $dataSkills for bonus magic gives to the param it
  * is junctioned to.
@@ -37,6 +35,7 @@
  * }
  *
  * @param equippedIcon
+ * @type number
  * @text Icon to display in skill list when magic is equipped to params
  * @default 160
  *
@@ -91,7 +90,7 @@ py06pd.JunctionMagic = py06pd.JunctionMagic || {};
     py06pd.JunctionMagic.vocabLUK = params.vocabLUK || 'Luck';
 
 //=============================================================================
-// BattleManager
+// DataManager
 //=============================================================================
 
     py06pd.JunctionMagic.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;

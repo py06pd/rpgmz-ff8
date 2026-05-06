@@ -15,7 +15,10 @@ py06pd_MagicStock
 py06pd_EquipLearnSkill
 py06pd_BattleMechanics
 py06pd_JunkShop
+py06pd_DrawPoints
 py06pd_JunctionMagic
+py06pd_SupportAbilities
+py06pd_JunctionAbilities
 
 ## Progress
 
@@ -24,9 +27,14 @@ py06pd_JunctionMagic
  * Junk shop
  * Enemy levels
    * Params
+   * Draw magic
+ * Draw command
+ * Draw points
  * Assign magic to attributes
    * Params
    * xParams
+ * Support abilities
+ * Equip support skills and commands
 
 ## Todo (not comprehensive)
 
@@ -38,15 +46,11 @@ py06pd_JunctionMagic
  * Status data incl. support skills
  * Weapon data
  * FF8 attack strength
- * Equip support skills and commands
  * Stock magic
    * Transfer magic
- * Draw command
- * Draw points
  * Enemy levels
    * Drop items
    * Steal items
-   * Draw magic
  * Assign magic to attributes
    * Element Atk
    * Element Def
@@ -57,6 +61,11 @@ py06pd_JunctionMagic
  * Mug command
  * Limit break
  * Support abilities
+   * Rare Item
+   * Auto-Potion
+   * Expendx2-1
+   * Expendx3-1
+   * Return Damage
  * FF8 battle speed
  * Card game
  * Damage display in above target rather than in battle log window

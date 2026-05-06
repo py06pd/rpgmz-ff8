@@ -25,17 +25,34 @@
  * Use json data for not in $dataEnemies to specify AP gained at end of battle
  * {"ap":<ap gained>}
  *
+ * @param learnedIcon
+ * @type number
+ * @text Icon to display in learning list when skill has been learnt
+ * @default 87
+ *
+ * @param vocabGFAbilities
+ * @text Menu text for GF Abilities learning screen
+ * @default GF Abilities
+ *
+ * @param vocabJunctionGF
+ * @text Menu text for assigning GF to an actor screen
+ * @default Junction GF
+ *
+ * @param vocabObtainAp
+ * @text Battle result text for gaining ability points from enemies
+ * @default %1 AP received!
  */
 
 var py06pd = py06pd || {};
 py06pd.EquipLearnSkill = py06pd.EquipLearnSkill || {};
 
-py06pd.EquipLearnSkill.learnedIcon = 87;
-py06pd.EquipLearnSkill.vocabGFAbilities = "GF Abilities";
-py06pd.EquipLearnSkill.vocabJunctionGF = "Junction GF";
-py06pd.EquipLearnSkill.vocabObtainAp = "%1 AP received!";
-
 (function() {
+
+    const params = PluginManager.parameters('py06pd_EquipLearnSkill');
+    py06pd.EquipLearnSkill.learnedIcon = Number(params.learnedIcon || 87);
+    py06pd.EquipLearnSkill.vocabGFAbilities = params.vocabGFAbilities || "GF Abilities";
+    py06pd.EquipLearnSkill.vocabJunctionGF = params.vocabJunctionGF || "Junction GF";
+    py06pd.EquipLearnSkill.vocabObtainAp = params.vocabObtainAp || "%1 AP received!";
 
 //=============================================================================
 // BattleManager
@@ -49,12 +66,14 @@ py06pd.EquipLearnSkill.vocabObtainAp = "%1 AP received!";
         if (!py06pd.EquipLearnSkill.DatabaseLoaded) {
             $dataArmors.forEach(item => {
                 if (item) {
-                    item.skills = py06pd.Utils.ReadJsonNote(item, 'skills', []);
+                    const data = py06pd.Utils.ReadJsonNote(item, 'EquipLearnSkill', {});
+                    item.skills = data.skills ?? [];
                 }
             });
             $dataEnemies.forEach(item => {
                 if (item) {
-                    item.ap = py06pd.Utils.ReadJsonNote(item, 'ap', 0);
+                    const data = py06pd.Utils.ReadJsonNote(item, 'EquipLearnSkill', {});
+                    item.ap = data.ap ?? 0;
                 }
             });
 

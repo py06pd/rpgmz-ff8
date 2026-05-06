@@ -7,11 +7,10 @@
  * @plugindesc Draw points.
  * @author Peter Dawson
  *
- * Requires py06pd_MagicStock plugin
- *
- * @help py06pd_DrawPoints.js
+ * @help Requires py06pd_MagicStock plugin
  *
  * @param resetStepCount
+ * @type number
  * @text Steps after which 50% chance to refill 50% of draw point stock
  * @default 10240
  *
@@ -209,7 +208,7 @@ Scene_DrawPoint.prototype.createChoiceWindow = function() {
 Scene_DrawPoint.prototype.choiceWindowRect = function() {
     const ww = this.mainCommandWidth();
     const wx = Graphics.boxWidth - ww - 8;
-    const wh = this.calcWindowHeight($gameParty.battleMembers().length + 1, true);
+    const wh = this.calcWindowHeight($gameParty.allBattleMembers().length + 1, true);
     const wy = (Graphics.boxHeight - wh) / 2;
     return new Rectangle(wx, wy, ww, wh);
 };
@@ -227,7 +226,7 @@ Scene_DrawPoint.prototype.onChoiceOk = function() {
     if (this._choicesWindow.index() === 0) {
         this.popScene();
     } else {
-        const actor = $gameParty.battleMembers()[this._choicesWindow.index() - 1];
+        const actor = $gameParty.allBattleMembers()[this._choicesWindow.index() - 1];
         const amount = this._point.drawAmount();
         const skill = $dataSkills[this._point.skillId()];
         this._point.executeDraw(actor, amount);
@@ -303,7 +302,7 @@ Window_DrawPointChoices.prototype.colSpacing = function() {
 };
 
 Window_DrawPointChoices.prototype.maxItems = function() {
-    return $gameParty.battleMembers().length + 1;
+    return $gameParty.allBattleMembers().length + 1;
 };
 
 Window_DrawPointChoices.prototype.drawItem = function(index) {
@@ -311,7 +310,7 @@ Window_DrawPointChoices.prototype.drawItem = function(index) {
     if (index === 0) {
         this.drawText(py06pd.DrawPoints.vocabDontDraw, rect.x, rect.y, rect.width);
     } else {
-        const actor = $gameParty.battleMembers()[index - 1];
+        const actor = $gameParty.allBattleMembers()[index - 1];
         const textWidth = rect.width - 8 - ImageManager.iconWidth;
         this.drawText(actor.name(), rect.x, rect.y, textWidth);
 

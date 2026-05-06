@@ -79,7 +79,7 @@ py06pd.EnemyLevels = py06pd.EnemyLevels || {};
     py06pd.EnemyLevels.Game_Troop_setup = Game_Troop.prototype.setup;
     Game_Troop.prototype.setup = function(troopId) {
         py06pd.EnemyLevels.Game_Troop_setup.call(this, troopId);
-        const members = $gameParty.battleMembers();
+        const members = $gameParty.allBattleMembers();
         const avg = members.reduce((r, actor) => r + actor.level, 0) / members.length;
         this._enemies.forEach(enemy => {
             if (enemy.levelData().level) {
