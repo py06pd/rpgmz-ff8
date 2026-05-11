@@ -139,21 +139,9 @@ py06pd.SupportAbilities = py06pd.SupportAbilities || {};
 
     py06pd.SupportAbilities.Window_ActorCommand_makeCommandList = Window_ActorCommand.prototype.makeCommandList;
     Window_ActorCommand.prototype.makeCommandList = function() {
+        py06pd.SupportAbilities.Window_ActorCommand_makeCommandList.call(this);
         if (this._actor) {
-            const commands = {
-                Attack: "addAttackCommand",
-                Skill: "addSkillCommands",
-                Guard: "addGuardCommand",
-                Item: "addItemCommand",
-            }
-            Object.keys(commands).forEach(command => {
-                const replace = this._actor.supportAbilities().find(ability => ability.replaceCommand);
-                if (replace.replaceCommand[command]) {
-                    this[replace.replaceCommand[command]]();
-                } else {
-                    this[command]();
-                }
-            });
+            this._list = this.replaceCommands(this._list);
         }
     };
 
@@ -241,4 +229,25 @@ Game_Actor.prototype.initTpbChargeTime = function(advantageous) {
     if (this.supportAbilities().some(ability => ability.initiative)) {
         this._tpbChargeTime = 1;
     }
+};
+
+//=============================================================================
+// Window_ActorCommand
+//=============================================================================
+
+Window_ActorCommand.prototype.replaceCommands = function(commands) {
+    return commands.map(option => {
+        const replace = this._actor.supportAbilities()
+            .find(ability => ability.replaceCommand && ability.replaceCommand[option.symbol]);
+        if (replace) {
+            return {
+                name: replace.name,
+                symbol: replace.replaceCommand[option.symbol],
+                enabled: option.enabled,
+                ext: option.ext
+            };
+        }
+
+        return option;
+    });
 };

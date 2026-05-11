@@ -10,10 +10,12 @@ treating/testing them as discrete plugins.
 The order I have tested them in is:
 
 py06pd_Utils
+py06pd_BaseListWindow
 py06pd_EnemyLevels
 py06pd_MagicStock
 py06pd_EquipLearnSkill
 py06pd_BattleMechanics
+py06pd_VictoryScreen
 py06pd_JunkShop
 py06pd_DrawPoints
 py06pd_JunctionMagic
@@ -35,6 +37,7 @@ py06pd_JunctionAbilities
    * xParams
  * Support abilities
  * Equip support skills and commands
+ * Battle results screen
 
 ## Todo (not comprehensive)
 
@@ -69,5 +72,4 @@ py06pd_JunctionAbilities
  * FF8 battle speed
  * Card game
  * Damage display in above target rather than in battle log window
- * Battle results screen
  * Summon GF

@@ -81,6 +81,12 @@ py06pd.JunctionAbilities = py06pd.JunctionAbilities || {};
         this._supportSlots = [0, 0, 0, 0];
     };
 
+    py06pd.JunctionAbilities.Game_Actor_supportAbilities = Game_Actor.prototype.supportAbilities;
+    Game_Actor.prototype.supportAbilities = function() {
+        const skills = py06pd.JunctionAbilities.Game_Actor_supportAbilities.call(this);
+        return skills.filter(skill => this._supportSlots.includes(skill.id));
+    };
+
 //=============================================================================
 // Scene_JunctionMagic
 //=============================================================================
@@ -104,6 +110,34 @@ py06pd.JunctionAbilities = py06pd.JunctionAbilities || {};
         this._abilitySlotWindow.hide();
         this._abilityWindow.hide();
         this._commandWindow.activate();
+    };
+
+//=============================================================================
+// Window_ActorCommand
+//=============================================================================
+
+    py06pd.JunctionAbilities.Window_ActorCommand_makeCommandList = Window_ActorCommand.prototype.makeCommandList;
+    Window_ActorCommand.prototype.makeCommandList = function() {
+        if (this._actor) {
+            this._actor.commandSlots().forEach(slot => {
+                if (slot === 1) {
+                    this.addAttackCommand();
+                } else if (slot === "Magic") {
+                    this.addSkillCommands();
+                } else if (slot === "Guard") {
+                    this.addGuardCommand();
+                } else if (slot === "Item") {
+                    this.addItemCommand();
+                } else if (slot === "Draw") {
+                    this.addDrawCommand();
+                } else if (slot === "GF") {
+                    //this.addGFCommand();
+                } else {
+                    this.addCommand($dataSkills[slot].name, slot);
+                }
+            });
+            this._list = this.replaceCommands(this._list);
+        }
     };
 })();
 
@@ -292,7 +326,8 @@ Window_JunctionAbility.prototype.makeItemList = function() {
             { id: 0, name: "Magic", iconIndex: 0 },
             { id: 0, name: "Item", iconIndex: 0 },
             { id: 0, name: "Draw", iconIndex: 0 },
-            { id: 0, name: "GF", iconIndex: 0 }
+            { id: 0, name: "GF", iconIndex: 0 },
+            { id: 0, name: "Guard", iconIndex: 0 }
         ];
 
         this._actor.gfSkills().forEach(skillName => {
@@ -407,7 +442,7 @@ Window_JunctionAbilitySlot.prototype.isCurrentItemEnabled = function() {
 
 Window_JunctionAbilitySlot.prototype.makeItemList = function() {
     this._data = this._actor.commandSlots().map(slot => {
-        if (["Magic", "Item", "Draw", "GF"].includes(slot)) {
+        if (["Magic", "Item", "Draw", "GF", "Guard"].includes(slot)) {
             return { id: 0, name: slot, iconIndex: 0 };
         }
 

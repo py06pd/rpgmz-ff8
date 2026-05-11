@@ -311,22 +311,30 @@ Game_Party.prototype.canLearn = function(id, name) {
         (!skill.require || this.learnedSkill(id, skill.require));
 };
 
+Game_Party.prototype.currentLearning = function (id) {
+    return this._learningSkills.find(gf => gf.id === id && gf.active);
+};
+
 Game_Party.prototype.gainAp = function(ap) {
-    this._learningSkills.filter(gf => gf.active).map(gf => gf.id).forEach(id => {
-        let skillAp = ap;
-        while (skillAp > 0) {
-            const learn = this._learningSkills.find(gf => gf.id === id && gf.active);
-            if (learn) {
-                const max = $dataArmors[id].skills.find(skill => skill.name === learn.name).ap;
-                const used = Math.min(skillAp, max - learn.value);
-                learn.value = learn.value + used;
-                skillAp = skillAp - used;
-                if (this.learnedSkill(id, learn.name)) {
-                    this.startLearningNext(id);
+    this.allBattleMembers().forEach(actor => {
+        if (!actor.isDeathStateAffected()) {
+            actor.gfs().forEach(equip => {
+                let skillAp = ap;
+                while (skillAp > 0) {
+                    const learning = this._learningSkills.find(gf => gf.id === equip.id && gf.active);
+                    if (learning) {
+                        const learn = equip.skills.find(skill => skill.name === learning.name);
+                        const used = Math.min(skillAp, learn.ap - learning.value);
+                        learning.value = learning.value + used;
+                        skillAp = skillAp - used;
+                        if (learning.value >= learn.ap) {
+                            this.startLearningNext(equip.id);
+                        }
+                    } else {
+                        skillAp = 0;
+                    }
                 }
-            } else {
-                skillAp = 0;
-            }
+            });
         }
     });
 };
