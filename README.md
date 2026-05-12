@@ -30,6 +30,7 @@ py06pd_JunctionAbilities
  * Enemy levels
    * Params
    * Draw magic
+   * Drop items
  * Draw command
  * Draw points
  * Assign magic to attributes
@@ -52,7 +53,6 @@ py06pd_JunctionAbilities
  * Stock magic
    * Transfer magic
  * Enemy levels
-   * Drop items
    * Steal items
  * Assign magic to attributes
    * Element Atk

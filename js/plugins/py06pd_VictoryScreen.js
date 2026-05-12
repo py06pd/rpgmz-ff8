@@ -7,7 +7,8 @@
  * @plugindesc FF8 victory screen
  * @author Peter Dawson
  *
- * @help py06pd_VictoryScreen.js
+ * @help Requires py06pd_EnemyLevels
+ * Requires py06pd_EquipLearnSkill
  *
  * @param vocabCurrentExp
  * @text Current EXP text
@@ -176,21 +177,23 @@ Scene_Battle.prototype.createVictoryItemWindow = function() {
     this._victoryItemWindow = new Window_BattleVictoryItem(rect);
     this._victoryItemWindow.setHandler("ok", this.onVictoryItemOk.bind(this));
     this._victoryItemWindow.setHandler("cancel", this.onVictoryItemOk.bind(this));
+    this._victoryItemWindow.setHelpWindow(this._helpWindow);
     this._victoryItemWindow.close();
     this.addWindow(this._victoryItemWindow);
 };
 
 Scene_Battle.prototype.victoryWindowItemRect = function() {
     const wy = this.calcWindowHeight(1, false);
-    const ww = Graphics.boxWidth;
+    const wx = Graphics.boxWidth / 4;
+    const ww = Graphics.boxWidth / 2;
     const wh = this.calcWindowHeight(1, false);
-    return new Rectangle(0, wy, ww, wh);
+    return new Rectangle(wx, wy, ww, wh);
 };
 
 Scene_Battle.prototype.onApOk = function() {
     this._apWindow.close();
     const newSkills = [];
-    const ap = BattleManager._rewards.ap;
+    const ap = BattleManager.rewards().ap;
     $gameParty.allBattleMembers().forEach(actor => {
        if (!actor.isDeathStateAffected()) {
            actor.gfs().forEach(equip => {
@@ -214,8 +217,17 @@ Scene_Battle.prototype.onApOk = function() {
 Scene_Battle.prototype.onExpOk = function() {
     if (this._expWindow.isDone()) {
         this._expWindow.close();
-        if (BattleManager._rewards.items.length > 0) {
+        const numItems = BattleManager.rewards().items.length;
+        if (numItems > 0) {
+            const wh2 = this._helpWindow.height;
+            this._helpWindow.move(0, Graphics.boxHeight - wh2, Graphics.boxWidth, wh2);
+            const wx = this._victoryItemWindow.x;
+            const ww = this._victoryItemWindow.width;
+            const wh = this.calcWindowHeight(numItems, true);
+            const wy = ((Graphics.boxHeight - this._titleWindow.height) - wh) / 2;
+            this._victoryItemWindow.move(wx, wy, ww, wh);
             this._titleWindow.setText(py06pd.VictoryScreen.vocabItemReceived);
+            this._victoryItemWindow.select(0);
             this._victoryItemWindow.open();
             this._helpWindow.show();
         } else {
@@ -316,7 +328,8 @@ Window_BattleVictoryAp.prototype.initialize = function(rect) {
 };
 
 Window_BattleVictoryAp.prototype.refresh = function() {
-    this._text = py06pd.VictoryScreen.vocabGFReceivedAP.format(BattleManager._rewards.ap);
+    this._text = py06pd.VictoryScreen.vocabGFReceivedAP
+        .format(BattleManager.rewards().ap);
     Window_BattleVictory.prototype.refresh.call(this);
 };
 
@@ -350,12 +363,12 @@ Window_BattleVictoryExp.prototype.actor = function(index) {
 };
 
 Window_BattleVictoryExp.prototype.isDone = function() {
-    return this._exp === BattleManager._rewards.exp;
+    return this._exp === BattleManager.rewards().exp;
 };
 
 Window_BattleVictoryExp.prototype.run = function() {
     if (this._running) {
-        this._exp = BattleManager._rewards.exp;
+        this._exp = BattleManager.rewards().exp;
         this._running = false;
     } else {
         this._running = true;
@@ -380,7 +393,7 @@ Window_BattleVictoryExp.prototype.drawItem = function(index) {
         this.drawActorName(actor, x, y);
         this.drawText(py06pd.VictoryScreen.vocabExpAcquired, offset, y);
         const exp = actor.isDeathStateAffected() ?
-            0 : (BattleManager._rewards.exp - this._exp);
+            0 : (BattleManager.rewards().exp - this._exp);
         this.drawText(exp, offset, y, textWidth, "right");
     }
     y += this.lineHeight();
@@ -411,7 +424,7 @@ Window_BattleVictoryExp.prototype.processCancel = function() {
 Window_BattleVictoryExp.prototype.update = function() {
     Window_StatusBase.prototype.update.call(this);
     if (this._running) {
-        if (this._exp + 1 <= BattleManager._rewards.exp) {
+        if (this._exp + 1 <= BattleManager.rewards().exp) {
             this._exp += 1;
             this.refresh();
         } else {
@@ -482,17 +495,17 @@ Window_BattleVictoryItem.prototype.initialize = function(rect) {
 };
 
 Window_BattleVictoryItem.prototype.makeItemList = function() {
-    this._data = BattleManager._rewards.items;
+    this._data = BattleManager.rewards().items;
 };
 
 Window_BattleVictoryItem.prototype.drawItem = function(index) {
     const item = this.itemAt(index);
     if (item) {
-        const rect = this.itemRect(index);
-        this.drawItemName(item, rect.x, rect.y, rect.width);
-        //const numberWidth = this.textWidth("000");
-        //this.drawItemName($dataItems[item.id], rect.x, rect.y, rect.width - numberWidth);
-        //this.drawText(item.amount, rect.x, rect.y, rect.width, "right");
+        const rect = this.itemLineRect(index);
+        const numberWidth = this.textWidth("000");
+        this.drawItemName(item.item, rect.x, rect.y, rect.width - numberWidth);
+        this.drawText(":", rect.x, rect.y, rect.width - this.textWidth("00"), "right");
+        this.drawText(item.amount, rect.x, rect.y, rect.width, "right");
     }
 };
 
@@ -510,4 +523,8 @@ Window_BattleVictoryItem.prototype.open = function() {
     this.refresh();
     Window_BaseList.prototype.open.call(this);
     this.activate();
+};
+
+Window_BattleVictoryItem.prototype.updateHelp = function() {
+    this.setHelpWindowItem(this.item().item);
 };
