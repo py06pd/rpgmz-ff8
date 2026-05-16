@@ -11,6 +11,7 @@ The order I have tested them in is:
 
 py06pd_Utils
 py06pd_BaseListWindow
+py06pd_Mug
 py06pd_EnemyLevels
 py06pd_MagicStock
 py06pd_EquipLearnSkill
@@ -31,6 +32,7 @@ py06pd_JunctionAbilities
    * Params
    * Draw magic
    * Drop items
+   * Steal items
  * Draw command
  * Draw points
  * Assign magic to attributes
@@ -52,8 +54,6 @@ py06pd_JunctionAbilities
  * FF8 attack strength
  * Stock magic
    * Transfer magic
- * Enemy levels
-   * Steal items
  * Assign magic to attributes
    * Element Atk
    * Element Def
@@ -61,10 +61,8 @@ py06pd_JunctionAbilities
    * Status Def
  * Refine items/magic
  * Call shops from menu
- * Mug command
  * Limit break
  * Support abilities
-   * Rare Item
    * Auto-Potion
    * Expendx2-1
    * Expendx3-1

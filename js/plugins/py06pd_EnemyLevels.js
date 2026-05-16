@@ -22,6 +22,13 @@
  *         { "item": "<item name for 51/256>", "amount": <drop amount for 51/256> },
  *         { "item": "<item name for 15/256>", "amount": <drop amount for 15/256> },
  *         { "item": "<item name for 12/256>", "amount": <drop amount for 12/256> }
+ *       ],
+ *       "mugDifficulty": <difficulty * 100/256 is base chance of any mug success>,
+ *       "mugItems": [
+ *         { "item": "<item name for 178/256>", "amount": <steal amount for 178/256> },
+ *         { "item": "<item name for 51/256>", "amount": <steal amount for 51/256> },
+ *         { "item": "<item name for 15/256>", "amount": <steal amount for 15/256> },
+ *         { "item": "<item name for 12/256>", "amount": <steal amount for 12/256> }
  *       ]
  *     },
  *   ],
@@ -115,22 +122,23 @@ py06pd.EnemyLevels = py06pd.EnemyLevels || {};
         const rand1 = Math.randomInt(100);
         if (rand1 < this.levelData().dropChance) {
             const rand = Math.randomInt(256);
-            let item = null;
-            if (rand < 12) {
-                item = this.levelData().dropItems[3];
-            } else if (rand < 27) {
-                item = this.levelData().dropItems[2];
-            } else if (rand < 78) {
-                item = this.levelData().dropItems[1];
-            } else {
-                item = this.levelData().dropItems[0];
-            }
+            const item = this.dropItems()[this.dropSlot(rand)];
 
             const data = $dataItems.find(i => i && i.name === item.item);
             return [{ item: data, amount: item.amount }];
         }
 
         return [];
+    };
+
+    py06pd.EnemyLevels.Game_Enemy_mugDifficulty = Game_Enemy.prototype.mugDifficulty;
+    Game_Enemy.prototype.mugDifficulty = function() {
+        return this.levelData().mugDifficulty;
+    };
+
+    py06pd.EnemyLevels.Game_Enemy_mugItems = Game_Enemy.prototype.mugItems;
+    Game_Enemy.prototype.mugItems = function() {
+        return this.levelData().mugItems;
     };
 
 //=============================================================================
@@ -164,6 +172,26 @@ BattleManager.rewards = function() {
 //=============================================================================
 // Game_Enemy
 //=============================================================================
+
+Game_Enemy.prototype.dropItems = function() {
+    return this.levelData().dropItems;
+};
+
+Game_Enemy.prototype.dropSlot = function(rand) {
+    if (rand < 178) {
+        return 0;
+    }
+
+    if (rand < 229) {
+        return 1;
+    }
+
+    if (rand < 244) {
+        return 2;
+    }
+
+    return 3;
+};
 
 Game_Enemy.prototype.levelData = function() {
     return this.enemy().levelData

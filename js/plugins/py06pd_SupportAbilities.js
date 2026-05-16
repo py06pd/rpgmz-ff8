@@ -23,6 +23,7 @@
  *   "alert": <flag for cancel surprise attacks on party>
  *   "replaceCommand": {"<name of command to replace>": "<name of command to replace with>"}
  *   "switch": <id of switch to enabled when the ability is assigned for eg. Move-Find>
+ *   "rareItem": <flag for changing mug probabilities>
  * }
  *
  */
@@ -52,6 +53,7 @@ py06pd.SupportAbilities = py06pd.SupportAbilities || {};
                     item.replaceCommand = data.replaceCommand;
                     item.initiative = data.initiative;
                     item.switch = data.switch;
+                    item.rareItem = data.rareItem ?? false;
                 }
             });
 
@@ -122,6 +124,30 @@ py06pd.SupportAbilities = py06pd.SupportAbilities || {};
     };
 
 //=============================================================================
+// Game_Enemy
+//=============================================================================
+
+    py06pd.SupportAbilities.Game_Enemy_dropSlot = Game_Enemy.prototype.dropSlot;
+    Game_Enemy.prototype.dropSlot = function(rand) {
+        if (
+            $gameParty.allBattleMembers().some(member =>
+                member.supportAbilities().some(ability => ability.rareItem))
+        ) {
+            if (rand < 128) {
+                return 0;
+            }
+
+            if (rand < 242) {
+                return 1;
+            }
+
+            return 2;
+        }
+
+        return py06pd.SupportAbilities.Game_Enemy_dropSlot.call(this, rand);
+    };
+
+//=============================================================================
 // Game_Switches
 //=============================================================================
 
@@ -131,6 +157,16 @@ py06pd.SupportAbilities = py06pd.SupportAbilities || {};
             $gameParty.allBattleMembers().some(member =>
                 member.supportAbilities().some(ability =>
                     ability.switch === switchId));
+    };
+
+//=============================================================================
+// Scene_Battle
+//=============================================================================
+
+    py06pd.SupportAbilities.Scene_Battle_createActorCommandWindow = Scene_Battle.prototype.createActorCommandWindow;
+    Scene_Battle.prototype.createActorCommandWindow = function() {
+        py06pd.SupportAbilities.Scene_Battle_createActorCommandWindow.call(this);
+        this._actorCommandWindow.setHandler("junctioned", this.commandJunctioned.bind(this));
     };
 
 //=============================================================================
@@ -152,7 +188,7 @@ py06pd.SupportAbilities = py06pd.SupportAbilities || {};
 //=============================================================================
 
 Game_Actor.prototype.increaseSteps = function() {
-    const ability = this.supportAbilities().find(a => a.moveHpUp)
+    const ability = this.supportAbilities().find(a => a.moveHpUp);
     if (ability) {
         this._steps++;
         if (this._steps >= ability.moveHpUp) {
@@ -232,6 +268,16 @@ Game_Actor.prototype.initTpbChargeTime = function(advantageous) {
 };
 
 //=============================================================================
+// Scene_Battle
+//=============================================================================
+
+Scene_Battle.prototype.commandJunctioned = function() {
+    const action = BattleManager.inputtingAction();
+    action.setSkill(this._actorCommandWindow.currentExt());
+    this.onSelectAction();
+};
+
+//=============================================================================
 // Window_ActorCommand
 //=============================================================================
 
@@ -240,11 +286,12 @@ Window_ActorCommand.prototype.replaceCommands = function(commands) {
         const replace = this._actor.supportAbilities()
             .find(ability => ability.replaceCommand && ability.replaceCommand[option.symbol]);
         if (replace) {
+            const skill = $dataSkills.find(s => s.name === replace);
             return {
-                name: replace.name,
-                symbol: replace.replaceCommand[option.symbol],
+                name: replace,
+                symbol: "junctioned",
                 enabled: option.enabled,
-                ext: option.ext
+                ext: skill.id
             };
         }
 
