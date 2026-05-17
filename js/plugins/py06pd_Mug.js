@@ -16,7 +16,7 @@
  *
  * @param vocabCouldntSteal
  * @text Steal failed text
- * @default GF Abilities
+ * @default Couldn't steal
  *
  * @param vocabHasNothing
  * @text Has nothing text for when item has already been stolen from an enemy
@@ -111,8 +111,8 @@ py06pd.Mug = py06pd.Mug || {};
 
     py06pd.Mug.Window_BattleLog_displayActionResults = Window_BattleLog.prototype.displayActionResults;
     Window_BattleLog.prototype.displayActionResults = function(subject, target) {
-        py06pd.Mug.Window_BattleLog_displayActionResults.call(this, subject, target);
         this.displayMug(subject, target);
+        py06pd.Mug.Window_BattleLog_displayActionResults.call(this, subject, target);
     };
 
 })();
@@ -159,7 +159,7 @@ Game_Enemy.prototype.makeMugItems = function(actor) {
 
         const data = $dataItems.find(i => i && i.name === item.item);
         $gameParty.gainItem(data, item.amount);
-        return [data, item.amount];
+        return [item.item, item.amount];
     }
 
     return null;
@@ -180,11 +180,10 @@ Game_Item.prototype.isMug = function() {
 Window_BattleLog.prototype.displayMug = function(subject, target) {
     if (target.result().mugUsed) {
         this.push("pushBaseLine");
-
         if (target.result().mugEmpty) {
             this.push("addText", py06pd.Mug.vocabHasNothing);
         } else {
-            const item = target.result.mugItem;
+            const item = target.result().mugItem;
             if (item) {
                 this.push("addText", py06pd.Mug.vocabStoleItem.format(item[1], item[0]));
             } else {

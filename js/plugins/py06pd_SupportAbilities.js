@@ -286,9 +286,9 @@ Window_ActorCommand.prototype.replaceCommands = function(commands) {
         const replace = this._actor.supportAbilities()
             .find(ability => ability.replaceCommand && ability.replaceCommand[option.symbol]);
         if (replace) {
-            const skill = $dataSkills.find(s => s.name === replace);
+            const skill = $dataSkills.find(s => s && s.name === replace.replaceCommand[option.symbol]);
             return {
-                name: replace,
+                name: skill.name,
                 symbol: "junctioned",
                 enabled: option.enabled,
                 ext: skill.id

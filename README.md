@@ -26,21 +26,23 @@ py06pd_JunctionAbilities
 ## Progress
 
  * Assign GF
- * Learn skill/statuses from GF
- * Junk shop
- * Enemy levels
-   * Params
-   * Draw magic
-   * Drop items
-   * Steal items
+ * Assign magic to attributes
+    * Params
+    * xParams
+ * Battle results screen
  * Draw command
  * Draw points
- * Assign magic to attributes
-   * Params
-   * xParams
- * Support abilities
+ * Enemy levels
+    * Params
+    * Draw magic
+    * Drop items
+    * Steal items
  * Equip support skills and commands
- * Battle results screen
+ * FF8 attack strength
+ * FF8 battle speed
+ * Learn skill/statuses from GF
+ * Junk shop
+ * Support abilities
 
 ## Todo (not comprehensive)
 
@@ -51,7 +53,6 @@ py06pd_JunctionAbilities
  * Skill data
  * Status data incl. support skills
  * Weapon data
- * FF8 attack strength
  * Stock magic
    * Transfer magic
  * Assign magic to attributes
@@ -67,7 +68,5 @@ py06pd_JunctionAbilities
    * Expendx2-1
    * Expendx3-1
    * Return Damage
- * FF8 battle speed
  * Card game
- * Damage display in above target rather than in battle log window
  * Summon GF

@@ -195,28 +195,10 @@ py06pd.MagicStock.vocabStock = "Stock";
 // Window_BattleLog
 //=============================================================================
 
+    py06pd.MagicStock.Window_BattleLog_displayActionResults = Window_BattleLog.prototype.displayActionResults;
     Window_BattleLog.prototype.displayActionResults = function(subject, target) {
-        if (target.result().used) {
-            this.push("pushBaseLine");
-            this.displayCritical(target);
-            this.push("popupDamage", target);
-            this.push("popupDamage", subject);
-            this.displayDamage(target);
-            this.displayDraw(subject, target);
-            this.displayAffectedStatus(target);
-            this.displayFailure(target);
-            this.push("waitForNewLine");
-            this.push("popBaseLine");
-        }
-    };
-
-    Window_BattleLog.prototype.displayDraw = function(subject, target) {
-        const result = target.result();
-        if (result.drawnSkillId) {
-            const item = $dataSkills[result.drawnSkillId];
-            const message = py06pd.MagicStock.vocabDrawResult.format(subject.name(), result.drawn, item.name);
-            this.push("addText", message);
-        }
+        this.displayDraw(subject, target);
+        py06pd.MagicStock.Window_BattleLog_displayActionResults.call(this, subject, target);
     };
 
 //=============================================================================
@@ -460,5 +442,21 @@ Window_BattleDrawSkill.prototype.makeItemList = function() {
         this._data = this._enemy.drawMagic();
     } else {
         this._data = [];
+    }
+};
+
+//=============================================================================
+// Window_BattleLog
+//=============================================================================
+
+Window_BattleLog.prototype.displayDraw = function(subject, target) {
+    const result = target.result();
+    if (result.drawnSkillId) {
+        this.push("pushBaseLine");
+        const item = $dataSkills[result.drawnSkillId];
+        const message = py06pd.MagicStock.vocabDrawResult.format(subject.name(), result.drawn, item.name);
+        this.push("addText", message);
+        this.push("waitForNewLine");
+        this.push("popBaseLine");
     }
 };

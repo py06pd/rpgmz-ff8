@@ -34,6 +34,14 @@ py06pd.BattleMechanics = py06pd.BattleMechanics || {};
 // BattleManager
 //=============================================================================
 
+    BattleManager.displayStartMessages = function() {
+        if (this._preemptive) {
+            $gameMessage.add(TextManager.preemptive.format($gameParty.name()));
+        } else if (this._surprise) {
+            $gameMessage.add(TextManager.surprise.format($gameParty.name()));
+        }
+    };
+
     py06pd.BattleMechanics.BattleManager_onEncounter = BattleManager.onEncounter;
     BattleManager.onEncounter = function() {
         py06pd.BattleMechanics.BattleManager_onEncounter.call(this);
@@ -127,6 +135,27 @@ py06pd.BattleMechanics = py06pd.BattleMechanics || {};
     py06pd.BattleMechanics.Game_Unit_tpbReferenceTime = Game_Unit.prototype.tpbReferenceTime;
     Game_Unit.prototype.tpbReferenceTime = function() {
         return py06pd.BattleMechanics.BattleSpeed * 4000;
+    };
+
+//=============================================================================
+// Window_BattleLog
+//=============================================================================
+
+    Window_BattleLog.prototype.displayCritical = function(target) {
+    };
+
+    Window_BattleLog.prototype.displayHpDamage = function(target) {
+        if (target.result().hpAffected) {
+            if (target.result().hpDamage > 0 && !target.result().drain) {
+                this.push("performDamage", target);
+            }
+            if (target.result().hpDamage < 0) {
+                this.push("performRecovery", target);
+            }
+        }
+    };
+
+    Window_BattleLog.prototype.displayItemMessage = function(fmt, subject, item) {
     };
 
 //=============================================================================
