@@ -9,18 +9,39 @@
  *
  * @help py06pd_MagicStock.js
  *
+ * @param magicTypeId
+ * @type number
+ * @text Skill type id for magic skills
+ * @default 2
+ *
+ * @param vocabCast
+ * @text Menu option for casting drawn magic
+ * @default Cast
+ *
+ * @param vocabDraw
+ * @text Menu option for drawing magic
+ * @default Draw
+ *
+ * @param vocabDrawResult
+ * @text Stocked magic result text
+ * @default %1 stocked %2 %3
+ *
+ * @param vocabStock
+ * @text Menu option for storing drawn magic
+ * @default Stock
  */
 
 var py06pd = py06pd || {};
 py06pd.MagicStock = py06pd.MagicStock || {};
 
-py06pd.MagicStock.magicTypeId = 2;
-py06pd.MagicStock.vocabCast = "Cast";
-py06pd.MagicStock.vocabDraw = "Draw";
-py06pd.MagicStock.vocabDrawResult = "%1 stocked %2 %3";
-py06pd.MagicStock.vocabStock = "Stock";
-
 (function() {
+
+    const params = PluginManager.parameters('py06pd_MagicStock');
+    py06pd.MagicStock.magicTypeId = Number(params.magicTypeId || 2);
+    py06pd.MagicStock.vocabCast = params.vocabCast || 'Cast';
+    py06pd.MagicStock.vocabDraw = params.vocabDraw || 'Draw';
+    py06pd.MagicStock.vocabDrawResult = params.vocabDrawResult || '%1 stocked %2 %3';
+    py06pd.MagicStock.vocabStock = params.vocabStock || 'Stock';
 
 //=============================================================================
 // DataManager
@@ -278,7 +299,8 @@ Game_Actor.prototype.magic = function() {
 Game_Actor.prototype.addMagicStock = function(skillId, value) {
     const stock = this._magicStock.find(magic => magic.id === skillId);
     if (stock) {
-        stock.stock = stock.stock + value;
+        const newNumber = stock.stock + value;
+        stock.stock = newNumber.clamp(0, this.maxMagicStock(skillId));
     } else {
         this._magicStock.push({ id: skillId, stock: value });
     }
@@ -287,6 +309,10 @@ Game_Actor.prototype.addMagicStock = function(skillId, value) {
 Game_Actor.prototype.magicStock = function(skillId) {
     const stock = this._magicStock.find(magic => magic.id === skillId);
     return stock ? stock.stock : 0;
+};
+
+Game_Actor.prototype.maxMagicStock = function(skillId) {
+    return 100;
 };
 
 //=============================================================================

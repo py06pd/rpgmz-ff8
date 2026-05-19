@@ -43,6 +43,7 @@ py06pd_JunctionAbilities
  * Learn skill/statuses from GF
  * Junk shop
  * Support abilities
+ * Refine items/magic
 
 ## Todo (not comprehensive)
 
@@ -60,7 +61,6 @@ py06pd_JunctionAbilities
    * Element Def
    * Status Atk
    * Status Def
- * Refine items/magic
  * Call shops from menu
  * Limit break
  * Support abilities
